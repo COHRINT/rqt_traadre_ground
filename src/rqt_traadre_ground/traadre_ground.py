@@ -256,7 +256,7 @@ class DEMView(QGraphicsView):
 
         self.dem_changed.connect(self._update)
         self.hazmap_changed.connect(self._updateHazmap)
-        
+        self.demDownsample = 4
         self._dem_item = None
         self._goalIcon = None
         self._robotIcon = None
@@ -493,7 +493,7 @@ class DEMView(QGraphicsView):
         
         a = np.array(struct.unpack('<%dd' % (msg.width*msg.height), msg.data), dtype=np.float64, copy=False, order='C')
 
-        self.demDownsample = 4
+   
         rawDEM = a.reshape((self.h, self.w))
         rawDEM = cv2.resize(rawDEM, (self.h//self.demDownsample, self.w//self.demDownsample), interpolation = cv2.INTER_LINEAR)
         self.h = rawDEM.shape[0]
