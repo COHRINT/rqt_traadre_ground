@@ -267,7 +267,7 @@ class DEMView(QGraphicsView):
         self.w = 0
         self.h = 0
 
-        self._colors = [(238, 34, 116), (68, 134, 252), (236, 228, 46), (102, 224, 18), (242, 156, 6), (240, 64, 10), (196, 30, 250)]
+        self._colors = [(125, 0, 125), (68, 134, 252), (236, 228, 46), (102, 224, 18), (242, 156, 6), (240, 64, 10), (196, 30, 250)]
         self._scene = QGraphicsScene()
 
        
@@ -448,26 +448,30 @@ class DEMView(QGraphicsView):
     
     def hazmap_cb(self, msg):
         #Unlike the dem, the hazmap is pretty standard - gray8 image
-        hazmap = CvBridge().imgmsg_to_cv2(msg, desired_encoding="passthrough")
+        self.hazmap = CvBridge().imgmsg_to_cv2(msg, desired_encoding="passthrough")
 
-        self.hazmapImage = QImage(hazmap, msg.width, msg.height, QImage.Format_Grayscale8)
+        self.hazmapImage = QImage(self.hazmap, msg.width, msg.height, QImage.Format_Grayscale8)
         self.hazmap_changed.emit()
 
     def _updateHazmap(self):
         print 'Rendering hazmap'
 
         hazTrans = QImage(self.hazmapImage.width(), self.hazmapImage.height(), QImage.Format_ARGB32)
-        hazTrans.fill(Qt.transparent)
-        
+        #hazTrans.fill(Qt.transparent)
+
         for row in range(0, self.hazmapImage.height()):
             for col in range(0, self.hazmapImage.width()):
                 #Change the colormap to be clear for clear areas, red translucent for obstacles
-                pixColor = self.hazmapImage.pixelColor(col, row)
 
-                if pixColor.rgba() == 0xff000000:
-                    hazTrans.setPixelColor(col, row, QColor(255, 0, 0, 32))
+                pixColor = self.hazmap[row,col]
+
+                if pixColor == 0:
+                       #hazTrans.setPixelColor(col, row, QColor(255, 0, 0, 32))
+                    hazTrans.setPixel(col,row,0xffff0000)
                 else:
-                    hazTrans.setPixelColor(col, row, QColor(0, 0, 0, 0))
+                       #hazTrans.setPixelColor(col, row, QColor(0, 0, 0, 0))
+                    hazTrans.setPixel(col,row,0xdddddddd)
+
 
         self.hazmapItem = self._scene.addPixmap(QPixmap.fromImage(hazTrans)) #.scaled(self.w*100,self.h*100))
         self.hazmapItem.setPos(QPointF(0, 0))
